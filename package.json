@@ -1,5 +1,6 @@
 {
     "name": "Touch UI experiments",
     "author": "Florian Wesch <fw@info-beamer.com>",
-    "desc": "Touch UI experiments for info-beamer hosted touch devices"
+    "desc": "Touch UI experiments for info-beamer hosted touch devices",
+    "repository": "https://github.com/info-beamer/package-touch-ui-experiments"
 }
