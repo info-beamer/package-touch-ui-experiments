@@ -138,7 +138,7 @@ end
 
 Basically all widgets right now follow the same idea:
 
-```
+```lua
 local function slider(ui, state, x1, y1, x2, y2)
     -- get current widget state
     -- modify current widget state
