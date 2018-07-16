@@ -1,5 +1,10 @@
 # info-beamer touch UI experiments
 
+**Before you proceed: This is nowhere near finished and the
+UI isn't pretty. But it shows how you might build interfaces
+on your info-beamer hosted devices with very little code in
+the future.**
+
 ![Screenshot](screenshot.jpg)
 
 This repository shows how a touch interface running
