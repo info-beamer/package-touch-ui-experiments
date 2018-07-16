@@ -1,0 +1,51 @@
+#!/usr/bin/python
+import sys
+from select import select
+from evdev import ecodes, InputDevice, list_devices
+from hosted import node
+
+devices = {}
+
+def update_devices():
+    new = set(list_devices("/dev/input/"))
+    old = set(devices.keys())
+
+    for device_name in new - old:
+        device = InputDevice(device_name)
+        devices[device_name] = device
+        print >>sys.stderr, device.capabilities(verbose=True)
+
+    for device_name in old - new:
+        del devices[device_name]
+
+state = dict(
+    down = False,
+    x = 0,
+    y = 0,
+)
+
+def device_event(event):
+    # print >>sys.stderr, event.type, event.code
+    if event.type == ecodes.EV_KEY and event.code == ecodes.BTN_TOUCH:
+        state['down'] = event.value != 0
+    if event.type == ecodes.EV_ABS:
+        if event.code == ecodes.ABS_X:
+            state['x'] = event.value
+        if event.code == ecodes.ABS_Y:
+            state['y'] = event.value
+
+def monitor_input():
+    while 1:
+        update_devices()
+        r, w, e = select(devices.values(), [], [], 5)
+        for device in r:
+            try:
+                for ev in device.read():
+                    device_event(ev)
+            except IOError:
+                # device disconnected
+                pass
+        node['/input'](state)
+
+if __name__ == "__main__":
+    monitor_input()
