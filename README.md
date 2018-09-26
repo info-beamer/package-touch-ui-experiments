@@ -5,7 +5,7 @@ UI isn't pretty. But it shows how you might build interfaces
 on your info-beamer hosted devices with very little code in
 the future.**
 
-![Screenshot](screenshot.jpg)
+![Screenshot](example-ui.jpg)
 
 This repository shows how a touch interface running
 on info-beamer hosted might work. Right now it's quite
