@@ -31,13 +31,15 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-VERSION = "1.1"
+VERSION = "1.2"
 
 import os
 import sys
 import json
-import socket
 import time
+import errno
+import socket
+import select
 import pyinotify
 import thread
 import threading
@@ -234,21 +236,25 @@ class Node(object):
     def path(self):
         return self._node
 
-    def write_json(self, filename, data):
-        f = NamedTemporaryFile(prefix='hosted-py-tmp', dir=os.getcwd())
+    def write_file(self, filename, content):
+        f = NamedTemporaryFile(prefix='.hosted-py-tmp', dir=os.getcwd())
         try:
-            f.write(json.dumps(
-                data,
-                ensure_ascii=False,
-                separators=(',',':'),
-            ).encode('utf8'))
+            f.write(content)
         except:
             traceback.print_exc()
+            f.close()
             raise
         else:
             f.delete = False
             f.close()
             os.rename(f.name, filename)
+
+    def write_json(self, filename, data):
+        self.write_file(json.dumps(
+            data,
+            ensure_ascii=False,
+            separators=(',',':'),
+        ).encode('utf8'))
 
     class Sender(object):
         def __init__(self, node, path):
@@ -393,10 +399,71 @@ class APIs(object):
     def __getattr__(self, api_name):
         return APIProxy(self, api_name)
 
+class GPIOMonitor(object):
+    def __init__(self):
+        self._pin_fd = {}
+        self._state = {}
+        self._fd_2_pin = {}
+        self._poll = select.poll()
+        self._lock = threading.Lock()
+
+    def monitor(self, pin, invert=False):
+        if pin not in self._pin_fd:
+            if not os.path.exists("/sys/class/gpio/gpio%d" % pin):
+                with open("/sys/class/gpio/export", "wb") as f:
+                    f.write(str(pin))
+            # mdev is giving the newly create GPIO directory correct permissions.
+            for i in range(10):
+                try:
+                    with open("/sys/class/gpio/gpio%d/active_low" % pin, "wb") as f:
+                        f.write("1" if invert else "0")
+                    break
+                except IOError as err:
+                    if err.errno != errno.EACCES:
+                        raise
+                time.sleep(0.1)
+                log("waiting for GPIO permissions")
+            else:
+                raise IOError(errno.EACCES, "Cannot access GPIO")
+            with open("/sys/class/gpio/gpio%d/direction" % pin, "wb") as f:
+                f.write("in")
+            with open("/sys/class/gpio/gpio%d/edge" % pin, "wb") as f:
+                f.write("both")
+            fd = os.open("/sys/class/gpio/gpio%d/value" % pin, os.O_RDONLY)
+            self._state[pin] = bool(int(os.read(fd, 5)))
+            self._fd_2_pin[fd] = pin
+            self._pin_fd[pin] = fd
+            self._poll.register(fd, select.POLLPRI | select.POLLERR)
+
+    def poll(self, timeout=1000):
+        changes = []
+        for fd, evt in self._poll.poll(timeout):
+            os.lseek(fd, 0, 0)
+            state = bool(int(os.read(fd, 5)))
+            pin = self._fd_2_pin[fd]
+            with self._lock:
+                prev_state, self._state[pin] = self._state[pin], state
+            if state != prev_state:
+                changes.append((pin, state))
+        return changes
+
+    def poll_forever(self):
+        while 1:
+            for event in self.poll():
+                yield event
+
+    def on(self, pin):
+        with self._lock:
+            return self._state.get(pin, False)
 
 class Device(object):
     def __init__(self):
         self._socket = None
+        self._gpio = GPIOMonitor()
+
+    @property
+    def gpio(self):
+        return self._gpio
 
     def ensure_connected(self):
         if self._socket:
