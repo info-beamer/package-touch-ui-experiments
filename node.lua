@@ -4,6 +4,7 @@ util.no_globals()
 
 local HORIZONTAL_SCALE, VERTICAL_SCALE = 1, 1
 local HORIZONTAL_OFFSET, VERTICAL_OFFSET = 0, 0
+local ROTATION, st = 0, util.screen_transform(0)
 local red = resource.create_colored_texture(1,0,0,1)
 local green = resource.create_colored_texture(0,1,0,1)
 local blue = resource.create_colored_texture(0,0,1,1)
@@ -14,10 +15,12 @@ local json = require "json"
 local layout = require "layout"
 
 util.json_watch('config.json', function(config)
-    HORIZONTAL_SCALE = WIDTH / config.HORIZONTAL_MAX
-    VERTICAL_SCALE = HEIGHT / config.VERTICAL_MAX
-    HORIZONTAL_OFFSET = config.HORIZONTAL_OFFSET
-    VERTICAL_OFFSET = config.VERTICAL_OFFSET
+    HORIZONTAL_SCALE = WIDTH / config.horizontal_max
+    VERTICAL_SCALE = HEIGHT / config.vertical_max
+    HORIZONTAL_OFFSET = config.horizontal_offset
+    VERTICAL_OFFSET = config.vertical_offset
+    ROTATION = config.rotation
+    st = util.screen_transform(ROTATION)
 end)
 
 local function centered(font, x1, x2, y, text, size, r,g,b,a)
@@ -101,7 +104,7 @@ end
 
 local function touch_confirm(ui, state, x1, y1, x2, y2)
     state = ui.get_state(state)
-            
+
     local touch_time = state.touch_time or 1
     local mode = state.mode or "off_touched"
 
@@ -234,6 +237,19 @@ util.data_mapper{
         input_state = json.decode(raw)
         input_state.x = (input_state.x - HORIZONTAL_OFFSET) * HORIZONTAL_SCALE
         input_state.y = (input_state.y - VERTICAL_OFFSET) * VERTICAL_SCALE
+
+        if ROTATION == 270 then
+            local tmp = input_state.y
+            input_state.y = input_state.x
+            input_state.x = WIDTH - tmp
+        elseif ROTATION == 90 then
+            local tmp = input_state.y
+            input_state.y = HEIGHT - input_state.x
+            input_state.x = tmp
+        elseif ROTATION == 180 then
+            input_state.y = HEIGHT - input_state.y
+            input_state.x = WIDTH - input_state.x
+        end
     end
 }
 
@@ -369,7 +385,7 @@ function main_menu()
         ui.label({
             text = enable_foo and "Setting 'foo' enabled" or "Setting 'foo' disabled"
         }, layout.row(760, 20))
-        
+
         if ui.button(btn, layout.row(400, 100)).clicked then
             enable_foo = not enable_foo
         end
@@ -392,9 +408,14 @@ ui = UI{
 
 function node.render()
     gl.clear(0,0,0,1)
+
+    st()
+
     background:draw(0, 0, WIDTH, HEIGHT, background_alpha.value)
 
     layout.reset(20, 20, 20, 10)
+
+    red:draw(input_state.x - 20, input_state.y - 20, input_state.x + 20, input_state.y + 20)
 
     ui.input_state(input_state.down, input_state.x, input_state.y)
     ui.label({text = "info-beamer touch UI experiment"}, layout.row(760, 20))

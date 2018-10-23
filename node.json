@@ -3,27 +3,40 @@
   "options": [
     {
       "title": "Horizontal offset",
-      "name": "HORIZONTAL_OFFSET",
+      "name": "horizontal_offset",
       "type": "integer",
       "default": 0
     },
     {
       "title": "Vertical offset",
-      "name": "VERTICAL_OFFSET",
+      "name": "vertical_offset",
       "type": "integer",
       "default": 0
     },
     {
       "title": "Horizontal max",
-      "name": "HORIZONTAL_MAX",
+      "name": "horizontal_max",
       "type": "integer",
       "default": 0
     },
     {
       "title": "Vertical max",
-      "name": "VERTICAL_MAX",
+      "name": "vertical_max",
       "type": "integer",
       "default": 0
+    },
+    {
+      "title": "UI Rotation",
+      "name": "rotation",
+      "type": "select",
+      "hint": "Rotate content clockwise?",
+      "ui_width": 6,
+      "options": [
+        [0, "None"],
+        [90, "90°"],
+        [180, "180°"],
+        [270, "270°"]
+      ]
     }
   ]
 }

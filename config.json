@@ -1,6 +1,7 @@
 {
-  "VERTICAL_OFFSET": 1800,
-  "HORIZONTAL_OFFSET": 800,
-  "HORIZONTAL_MAX": 18200,
-  "VERTICAL_MAX": 29200
+  "vertical_offset": 1800,
+  "horizontal_offset": 800,
+  "horizontal_max": 18200,
+  "vertical_max": 29200,
+  "rotation": 270
 }
