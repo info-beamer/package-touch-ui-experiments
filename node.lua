@@ -2,6 +2,8 @@ gl.setup(NATIVE_WIDTH, NATIVE_HEIGHT)
 
 util.no_globals()
 
+local HORIZONTAL_SCALE, VERTICAL_SCALE = 1, 1
+local HORIZONTAL_OFFSET, VERTICAL_OFFSET = 0, 0
 local red = resource.create_colored_texture(1,0,0,1)
 local green = resource.create_colored_texture(0,1,0,1)
 local blue = resource.create_colored_texture(0,0,1,1)
@@ -10,6 +12,13 @@ local white = resource.create_colored_texture(1,1,1,1)
 local font = resource.load_font "font.ttf"
 local json = require "json"
 local layout = require "layout"
+
+util.json_watch('config.json', function(config)
+    HORIZONTAL_SCALE = WIDTH / config.HORIZONTAL_MAX
+    VERTICAL_SCALE = HEIGHT / config.VERTICAL_MAX
+    HORIZONTAL_OFFSET = config.HORIZONTAL_OFFSET
+    VERTICAL_OFFSET = config.VERTICAL_OFFSET
+end)
 
 local function centered(font, x1, x2, y, text, size, r,g,b,a)
     local w = font:width(text, size)
@@ -223,6 +232,8 @@ local input_state = { down = false, x = 0, y = 0, }
 util.data_mapper{
     input = function(raw)
         input_state = json.decode(raw)
+        input_state.x = (input_state.x - HORIZONTAL_OFFSET) * HORIZONTAL_SCALE
+        input_state.y = (input_state.y - VERTICAL_OFFSET) * VERTICAL_SCALE
     end
 }
 

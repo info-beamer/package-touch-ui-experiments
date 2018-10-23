@@ -1,4 +1,29 @@
 {
-    "name": "Settings",
-    "options": []
+  "name": "Settings",
+  "options": [
+    {
+      "title": "Horizontal offset",
+      "name": "HORIZONTAL_OFFSET",
+      "type": "integer",
+      "default": 0
+    },
+    {
+      "title": "Vertical offset",
+      "name": "VERTICAL_OFFSET",
+      "type": "integer",
+      "default": 0
+    },
+    {
+      "title": "Horizontal max",
+      "name": "HORIZONTAL_MAX",
+      "type": "integer",
+      "default": 0
+    },
+    {
+      "title": "Vertical max",
+      "name": "VERTICAL_MAX",
+      "type": "integer",
+      "default": 0
+    }
+  ]
 }
