@@ -1,4 +1,42 @@
 {
-    "name": "Settings",
-    "options": []
+  "name": "Settings",
+  "options": [
+    {
+      "title": "Horizontal offset",
+      "name": "horizontal_offset",
+      "type": "integer",
+      "default": 0
+    },
+    {
+      "title": "Vertical offset",
+      "name": "vertical_offset",
+      "type": "integer",
+      "default": 0
+    },
+    {
+      "title": "Horizontal max",
+      "name": "horizontal_max",
+      "type": "integer",
+      "default": 0
+    },
+    {
+      "title": "Vertical max",
+      "name": "vertical_max",
+      "type": "integer",
+      "default": 0
+    },
+    {
+      "title": "UI Rotation",
+      "name": "rotation",
+      "type": "select",
+      "hint": "Rotate content clockwise?",
+      "ui_width": 6,
+      "options": [
+        [0, "None"],
+        [90, "90°"],
+        [180, "180°"],
+        [270, "270°"]
+      ]
+    }
+  ]
 }
